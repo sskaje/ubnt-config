@@ -1,0 +1,4 @@
+#!/bin/bash
+
+test -z "$(iptables -t mangle -L VYATTA_FW_IN_HOOK -v |grep 'l2tp+')" && iptables -t mangle -A VYATTA_FW_IN_HOOK -i l2tp+ -j AUTO_VPN
+test -z "$(iptables -t mangle -L VYATTA_FW_IN_HOOK -v |grep 'pptp+')" && iptables -t mangle -A VYATTA_FW_IN_HOOK -i pptp+ -j AUTO_VPN

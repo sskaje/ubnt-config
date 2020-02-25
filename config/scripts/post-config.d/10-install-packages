@@ -1,0 +1,18 @@
+#!/bin/bash
+
+
+PACKAGE_DIR=/config/install/packages
+
+INSTALL_PACKAGES="wget vim redsocks dnsutils "
+
+
+install_packages() 
+{
+ apt update
+ echo "Install " $@
+ apt install -y $@
+}
+
+dpkg -l | grep vim >/dev/null || install_packages $INSTALL_PACKAGES
+
+
