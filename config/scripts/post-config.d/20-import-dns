@@ -4,18 +4,18 @@ dnsmasq_dir=/config/etc/dnsmasq.d
 test -d $dnsmasq_dir || mkdir -p dnsmasq_dir
 
 for i in $(ls /config/user-data/ipdata/dns-list/*.list); do
-	echo "from: $i"
-	dnsmasq_conf_name=$(basename $i .list)
+    echo "from: $i"
+    dnsmasq_conf_name=$(basename $i .list)
 
-	if [[ -z dnsmasq_conf_name ]]; then
-		echo "dnsmasq_conf_name is required"
-		exit
-	fi
+    if [[ -z dnsmasq_conf_name ]]; then
+        echo "dnsmasq_conf_name is required"
+        exit
+    fi
 
-	dnsmasq_conf_name=$dnsmasq_conf_name".conf"
-	echo "to: $dnsmasq_dir/$dnsmasq_conf_name"
+    dnsmasq_conf_name=$dnsmasq_conf_name".conf"
+    echo "to: $dnsmasq_dir/$dnsmasq_conf_name"
 
-	test -f $dnsmasq_dir/$dnsmasq_conf_name && rm -f $dnsmasq_dir/$dnsmasq_conf_name
+    test -f $dnsmasq_dir/$dnsmasq_conf_name && rm -f $dnsmasq_dir/$dnsmasq_conf_name
 
     sed '/^#/d;/^$/d' $i | awk -F , '{if($2!=""){print"server=/"$1"/"$2;}if($3!=""){print"ipset=/."$1"/"$3;}if($4!=""){print"address=/."$1"/"$4;}}' | tee $dnsmasq_dir/$dnsmasq_conf_name
 done
