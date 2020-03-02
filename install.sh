@@ -1,8 +1,8 @@
 #!/bin/bash
 
 if [ ! -d /etc/ubnt ]; then
-	echo "This script is designed for running on UBNT/Unifi Routers"
-	exit
+    echo "This script is designed for running on UBNT/Unifi Routers"
+    exit
 fi
 
 # The root directory on the ubnt where the script is installed
@@ -13,16 +13,16 @@ ubnt_dir_config=/config
 ubnt_dir_config_etc=${ubnt_dir_config}/etc
 
 # The directory for the script, which contains three subdirectories:
-# 	$ubnt_dir_config/scripts/firstboot.d   execute only once after firmware upgrade
-# 	$ubnt_dir_config/scripts/pre-config.d  execute before loading the system configuration
-# 	$ubnt_dir_config/scripts/post-config.d execute after loading the system configuration
+#   $ubnt_dir_config/scripts/firstboot.d   execute only once after firmware upgrade
+#   $ubnt_dir_config/scripts/pre-config.d  execute before loading the system configuration
+#   $ubnt_dir_config/scripts/post-config.d execute after loading the system configuration
 ubnt_dir_config_scripts_firstboot=${ubnt_dir_config}/scripts/firstboot.d
 ubnt_dir_config_scripts_preconfig=${ubnt_dir_config}/scripts/pre-config.d
 ubnt_dir_config_scripts_postconfig=${ubnt_dir_config}/scripts/post-config.d
 
 # The directory for the data:
-# 	$ubnt_dir_config/user-data/packages  deb directory, such as wireguard * .deb
-# 	$ubnt_dir_config/user-data/ipdata    IP or domain data that will be stored in ipset
+#   $ubnt_dir_config/user-data/packages  deb directory, such as wireguard * .deb
+#   $ubnt_dir_config/user-data/ipdata    IP or domain data that will be stored in ipset
 ubnt_dir_config_userdata_packages=${ubnt_dir_config}/user-data/packages
 ubnt_dir_config_userdata_ipdata=${ubnt_dir_config}/user-data/ipdata
 
