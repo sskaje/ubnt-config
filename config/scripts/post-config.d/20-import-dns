@@ -1,0 +1,45 @@
+#!/bin/bash
+dnsmasq_dir=/config/etc/dnsmasq.d
+
+test -d $dnsmasq_dir || mkdir -p dnsmasq_dir
+
+for i in $(ls /config/user-data/ipdata/dns-list/*.list); do
+	echo "from: $i"
+	dnsmasq_conf_name=$(basename $i .list)
+
+	if [[ -z dnsmasq_conf_name ]]; then
+		echo "dnsmasq_conf_name is required"
+		exit
+	fi
+
+	dnsmasq_conf_name=$dnsmasq_conf_name".conf"
+	echo "to: $dnsmasq_dir/$dnsmasq_conf_name"
+
+	test -f $dnsmasq_dir/$dnsmasq_conf_name && rm -f $dnsmasq_dir/$dnsmasq_conf_name
+
+	sed '/^#/d;/^$/d' $i | \
+	while read -r line; do 
+		echo $line
+		domain=$(echo $line | cut -f1 -d,)
+		default_resolver=$(echo $line | cut -f2 -d,)
+		ipset=$(echo $line | cut -f3 -d,)
+		hijacked_resolution=$(echo $line | cut -f4 -d,)
+
+		if [[ -z $domain ]]; then
+			echo "domain is required"
+			exit
+		fi
+
+		if [[ -n $default_resolver ]]; then
+			echo "server=/${domain}/${default_resolver}" | tee -a $dnsmasq_dir/$dnsmasq_conf_name
+		fi
+
+		if [[ -n $ipset ]]; then
+			echo "ipset=/.${domain}/${ipset}" | tee -a $dnsmasq_dir/$dnsmasq_conf_name
+		fi
+
+		if [[ -n ${hijacked_resolution} ]]; then
+			echo "address=/.${domain}/${hijacked_resolution}" | tee -a $dnsmasq_dir/$dnsmasq_conf_name
+		fi
+	done
+done
