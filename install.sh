@@ -1,47 +1,91 @@
 #!/bin/bash
+#
+# ubnt自愈能力安装脚本 FISH
+#
+# 说明：
+#   * ubnt路由器在升级固件后会删除所有配置和数据，除了/config目录,导致每次升级后都需要大量人工操作。
+#   * 执行此脚本后，自动设置好所有配置。
+#   * 此脚本是安装程序，即安装后使ubnt具备自愈能力，故安装此脚本时需ubnt正常运转且已连接互联网。
 
 if [ ! -d /etc/ubnt ]; then
     echo "This script is designed for running on UBNT/Unifi Routers"
     exit
 fi
 
-# The root directory on the ubnt where the script is installed
-ubnt_dir_config=/config
+# 1. 定义系统目录
+# UBNT开头的变量是EdgeOS默认自动执行或读取的目录
+# 根目录是/config，升级固件后数据不会丢失
 
-# The directory for the config
-# $ubnt_dir_config/etc link to /etc on the ubnt
-ubnt_dir_config_etc=${ubnt_dir_config}/etc
+# 在执行firstboot.d脚本前，自动安装目录*.deb
+UBNT_FIRSTBOOT_PKGS_DIR=/config/data/firstboot/install-packages
 
-# The directory for the script, which contains three subdirectories:
-#   $ubnt_dir_config/scripts/firstboot.d   execute only once after firmware upgrade
-#   $ubnt_dir_config/scripts/pre-config.d  execute before loading the system configuration
-#   $ubnt_dir_config/scripts/post-config.d execute after loading the system configuration
-ubnt_dir_config_scripts_firstboot=${ubnt_dir_config}/scripts/firstboot.d
-ubnt_dir_config_scripts_preconfig=${ubnt_dir_config}/scripts/pre-config.d
-ubnt_dir_config_scripts_postconfig=${ubnt_dir_config}/scripts/post-config.d
+# 三个启动时按顺序自动执行的脚本目录:
+#   /config/scripts/firstboot.d   升级完固件只执行一次
+#   /config/scripts/pre-config.d  每次重启后在加载config.boot之前执行
+#   /config/scripts/post-config.d 每次重启后在加载config.boot之后执行
+UBNT_FIRSTBOOT_DIR=/config/scripts/firstboot.d
+UBNT_PRECONFIG_DIR=/config/scripts/pre-config.d
+UBNT_POSTCONFIG_DIR=/config/scripts/post-config.d
 
-# The directory for the data:
-#   $ubnt_dir_config/user-data/packages  deb directory, such as wireguard * .deb
-#   $ubnt_dir_config/user-data/ipdata    IP or domain data that will be stored in ipset
-ubnt_dir_config_userdata_packages=${ubnt_dir_config}/user-data/packages
-ubnt_dir_config_userdata_ipdata=${ubnt_dir_config}/user-data/ipdata
 
-echo "Init the ubnt directories"
-mkdir -p $ubnt_dir_config_etc
-mkdir -p $ubnt_dir_config_scripts_firstboot
-mkdir -p $ubnt_dir_config_scripts_preconfig
-mkdir -p $ubnt_dir_config_scripts_postconfig
-mkdir -p $ubnt_dir_config_userdata_packages
-mkdir -p $ubnt_dir_config_userdata_ipdata
+# 2. 定义安装目录
+# FISH开头的变量是安装目录
+# 根目录是/user-data/fish
 
-echo "Install to the ubnt directories"
-installsh_dir=$(cd "$(dirname "$0")";pwd)
-test -d $installsh_dir/config/etc && cp -r $installsh_dir/config/etc $ubnt_dir_config_etc/
-test -d $installsh_dir/config/scripts/firstboot.d && cp -r $installsh_dir/config/scripts/firstboot.d/* $ubnt_dir_config_scripts_firstboot/
-cp -r $installsh_dir/config/scripts/pre-config.d/* $ubnt_dir_config_scripts_preconfig/
-cp -r $installsh_dir/config/scripts/post-config.d/* $ubnt_dir_config_scripts_postconfig/
-cp -r $installsh_dir/config/{dns,ipset,route}-list $ubnt_dir_config_userdata_ipdata/
+# 存放自动生成的配置和用户本地配置
+# 与/etc对应，会生成link文件到/etc
+# 如果用户有自定义配置，自行放置到此目录
+# 比如，/user-data/fish/etc/dnsmasq.d/local_domain.conf
+FISH_ETC_DIR=/user-data/fish/etc
 
-echo "Download Debs"
+# 安装包目录
+# 比如，/user-data/fish/packages/wireguard-v2.0-e300-0.0.20191219-2.deb
+FISH_PACKAGES_DIR=/user-data/fish/packages
+
+# 脚本目录
+# 安装程序生成的脚本都存放于此
+# 如果用户有自定义脚本，自行放置到此目录
+# 比如，/user-data/fish/scripts/local_crontab
+FISH_SCRIPTS_DIR=/user-data/fish/scripts
+
+# 数据目录
+# 比如，/user-data/fish/data/domain.list
+# /user-data/fish/data/ip.list
+FISH_DATA_DIR=/user-data/fish/data
+
+# 3. 创建UBNT目录
+echo "Create the UBNT directories"
+mkdir -p $UBNT_FIRSTBOOT_PKGS_DIR
+mkdir -p $UBNT_FIRSTBOOT_DIR
+mkdir -p $UBNT_PRECONFIG_DIR
+mkdir -p $UBNT_POSTCONFIG_DIR
+
+# 4. 创建FISH目录
+echo "Create the FISH directories"
+mkdir -p $FISH_ETC_DIR
+mkdir -p $FISH_PACKAGES_DIR
+mkdir -p $FISH_SCRIPTS_DIR
+mkdir -p $FISH_DATA_DIR
+
+# 5. 下载packages
+
+
+# 6. 生成init脚本
+
+
+# 7. 生成alias脚本
+
+
+# 8. 生成dnsmasq配置、设置ipset 脚本
+#    下载*.list
+
+# 9. restart service脚本
+
+# 10. link
+# packages link到UBNT_FIRSTBOOT_PKGS_DIR
+# 生成link etc
+
+
+
 
 echo "Install success"
