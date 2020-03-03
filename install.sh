@@ -6,6 +6,7 @@
 #   * ubnt路由器在升级固件后会删除所有配置和数据，除了/config目录,导致每次升级后都需要大量人工操作。
 #   * 执行此脚本后，自动设置好所有配置。
 #   * 此脚本是安装程序，即安装后使ubnt具备自愈能力，故安装此脚本时需ubnt正常运转且已连接互联网。
+#   * 请切换到root用户执行此脚本。sudo su -
 
 if [ ! -d /etc/ubnt ]; then
     echo "This script is designed for running on UBNT/Unifi Routers"
@@ -68,22 +69,39 @@ mkdir -p $FISH_SCRIPTS_DIR
 mkdir -p $FISH_DATA_DIR
 
 # 5. 下载packages
-
+WIREGUARD_URL="https://github.com/Lochnair/vyatta-wireguard/releases/download/0.0.20191219-2/wireguard-v2.0-e300-0.0.20191219-2.deb"
 
 # 6. 生成init脚本
+FISH_INIT_FILE=$FISH_SCRIPTS_DIR/fish_init.sh
+cat << EOF > $FISH_INIT_FILE
+#!/bin/bash
+#
+# 初始化脚本
+#
+echo "init script form FISH" 
+
+# timedatectl set-timezone Asia/Shanghai
+EOF
 
 
 # 7. 生成alias脚本
 
 
-# 8. 生成dnsmasq配置、设置ipset 脚本
+# 8. vim wget zip unzip dnsutils net-tools安装脚本
+#    配置apt源 stretch.list
+# deb http://mirrors.huaweicloud.com/debian/ stretch main contrib 
+# deb http://mirrors.huaweicloud.com/debian/ stretch-updates main contrib 
+# deb http://mirrors.huaweicloud.com/debian/ stretch-backports main contrib  
+# deb http://mirrors.huaweicloud.com/debian-security/ stretch/updates main 
+
+# 9. 生成dnsmasq配置、设置ipset 脚本
 #    下载*.list
 
-# 9. restart service脚本
+# 10. restart service脚本
 
-# 10. link
-# packages link到UBNT_FIRSTBOOT_PKGS_DIR
-# 生成link etc
+# 11. link
+#   packages link到UBNT_FIRSTBOOT_PKGS_DIR
+#   生成link etc
 
 
 
