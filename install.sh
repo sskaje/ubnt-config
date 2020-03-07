@@ -128,7 +128,27 @@ ln -sf $FISH_STRETCH_LIST_CONFIG /etc/apt/sources.list.d/stretch.list
 echo "$(date +%Y-%m-%d\ %H:%M:%S) - finish /config/scripts/firstboot.d/fish_init.sh..." 
 EOF
 
-# 8. vim wget zip unzip dnsutils net-tools安装脚本
+# 安装软件
+test -d ${FISH_SCRIPTS_DIR}/post-config.d || mkdir -p ${FISH_SCRIPTS_DIR}/post-config.d
+FISH_APT_INSTALL_SCRIPT=${FISH_SCRIPTS_DIR}/post-config.d/fish_apt_install.sh
+echo "$(date +%Y-%m-%d\ %H:%M:%S) - generating ${FISH_APT_INSTALL_SCRIPT}..."
+cat << EOF > $FISH_APT_INSTALL_SCRIPT
+#!/bin/bash
+#
+# 安装软件脚本
+#
+
+echo "$(date +%Y-%m-%d\ %H:%M:%S) - Starting apt install..." 
+
+echo "$(date +%Y-%m-%d\ %H:%M:%S) - updaing apt sources..." 
+apt update -y
+
+# wget zip unzip dnsutils net-tools
+echo "$(date +%Y-%m-%d\ %H:%M:%S) - installing wget zip unzip dnsutils net-tools..." 
+apt install -y wget zip unzip dnsutils net-tools
+
+echo "$(date +%Y-%m-%d\ %H:%M:%S) - finish apt install..." 
+EOF
 
 # 9. 生成dnsmasq配置、设置ipset 脚本
 #    下载*.list
