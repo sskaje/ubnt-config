@@ -1,0 +1,7 @@
+# port,null,ipset,hijacked-resolution
+
+80,,WEB_PORT,
+443,,WEB_PORT,
+8080,,WEB_PORT,
+8443,,WEB_PORT,
+8088,,WEB_PORT,
