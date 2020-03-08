@@ -13,11 +13,32 @@ if [ ! -d /etc/ubnt ]; then
     exit
 fi
 
+# 下载deb并创建link
+# $1 本地文件名
+# $2 下载地址
+function download_deb_link_firstboot() {
+    # downlaod deb
+    echo "$(date +%Y-%m-%d\ %H:%M:%S) - downloading $1..."
+    wget -O ${FISH_PACKAGES_DIR}/$1 $2
+
+    # link deb
+    echo "$(date +%Y-%m-%d\ %H:%M:%S) - linking ${FISH_PACKAGES_DIR}/$1 to ${UBNT_FIRSTBOOT_PKGS_DIR}/$1" 
+    ln -sf ${FISH_PACKAGES_DIR}/$1 ${UBNT_FIRSTBOOT_PKGS_DIR}/$1
+}
+
+# 下载数据
+# $1 本地文件名
+# $2 下载地址
+function download_data() {
+    echo "$(date +%Y-%m-%d\ %H:%M:%S) - downloading $1..."
+    wget -O ${FISH_DATA_DIR}/$1 $2
+}
+
 # 定义系统目录
 # UBNT开头的变量是EdgeOS默认自动执行或读取的目录
 # 根目录是/config，升级固件后数据不会丢失
 
-# 在执行firstboot.d脚本前，自动安装目录*.deb
+# 在执行firstboot.d脚本前，自动安装目录中的*.deb
 UBNT_FIRSTBOOT_PKGS_DIR=/config/data/firstboot/install-packages
 
 # 三个启动时按顺序自动执行的脚本目录:
@@ -69,20 +90,17 @@ mkdir -p $FISH_SCRIPTS_DIR
 mkdir -p $FISH_DATA_DIR
 
 # 下载packages
-FISH_WIREGUARD_DEB=${FISH_PACKAGES_DIR}/wireguard/wireguard.deb
-echo "$(date +%Y-%m-%d\ %H:%M:%S) - downloading ${FISH_WIREGUARD_DEB}..."
+download_deb_link_firstboot "wireguard.deb" "https://github.com/Lochnair/vyatta-wireguard/releases/download/0.0.20191219-2/wireguard-v2.0-e300-0.0.20191219-2.deb"
 
-test -d ${FISH_PACKAGES_DIR}/wireguard || mkdir -p ${FISH_PACKAGES_DIR}/wireguard
-wget -O $FISH_WIREGUARD_DEB "https://github.com/Lochnair/vyatta-wireguard/releases/download/0.0.20191219-2/wireguard-v2.0-e300-0.0.20191219-2.deb"
+# 下载数据
+download_data "domain.list" "https://raw.githubusercontent.com/sskaje/ubnt-config/dev/proxy/domain.list"
+download_data "ip.list" "https://raw.githubusercontent.com/sskaje/ubnt-config/dev/proxy/ip.list"
+download_data "port.list" "https://raw.githubusercontent.com/sskaje/ubnt-config/dev/proxy/port.list"
 
-# link debs
-echo "$(date +%Y-%m-%d\ %H:%M:%S) - linking $FISH_WIREGUARD_DEB to ${UBNT_FIRSTBOOT_PKGS_DIR}/wireguard.deb" 
-ln -sf $FISH_WIREGUARD_DEB ${UBNT_FIRSTBOOT_PKGS_DIR}/wireguard.deb
-
-# 生成local_env配置
-test -d ${FISH_ETC_DIR}/default || mkdir -p ${FISH_ETC_DIR}/default
+# 生成vyatta-local-env配置
 FISH_VYATTA_LOCAL_ENV_CONFIG=${FISH_ETC_DIR}/default/vyatta-local-env
 echo "$(date +%Y-%m-%d\ %H:%M:%S) - generating ${FISH_VYATTA_LOCAL_ENV_CONFIG}..."
+test -d ${FISH_ETC_DIR}/default || mkdir -p ${FISH_ETC_DIR}/default
 cat << EOF > $FISH_VYATTA_LOCAL_ENV_CONFIG
 export LANG=en_US.UTF-8
 export LC_ALL=C.UTF-8
@@ -90,16 +108,22 @@ export TERM=rxvt
 alias ll="ls -alh"
 EOF
 
-# 配置apt源
-test -d ${FISH_ETC_DIR}/apt/sources.list.d || mkdir -p ${FISH_ETC_DIR}/apt/sources.list.d
+# 生成apt源配置
 FISH_STRETCH_LIST_CONFIG=${FISH_ETC_DIR}/apt/sources.list.d/stretch.list
 echo "$(date +%Y-%m-%d\ %H:%M:%S) - generating ${FISH_STRETCH_LIST_CONFIG}..."
+test -d ${FISH_ETC_DIR}/apt/sources.list.d || mkdir -p ${FISH_ETC_DIR}/apt/sources.list.d
 cat << EOF > $FISH_STRETCH_LIST_CONFIG
 deb http://mirrors.huaweicloud.com/debian/ stretch main contrib 
 deb http://mirrors.huaweicloud.com/debian/ stretch-updates main contrib 
 deb http://mirrors.huaweicloud.com/debian/ stretch-backports main contrib  
 deb http://mirrors.huaweicloud.com/debian-security/ stretch/updates main 
 EOF
+
+# 生成dnsmasq配置
+FISH_DNSMASQ_CONFIG=${FISH_ETC_DIR}/dnsmasq.d/domain.conf
+echo "$(date +%Y-%m-%d\ %H:%M:%S) - generating ${FISH_DNSMASQ_CONFIG}..."
+test -d ${FISH_ETC_DIR}/dnsmasq.d || mkdir -p ${FISH_ETC_DIR}/dnsmasq.d
+sed '/^#/d;/^$/d' ${FISH_DATA_DIR}/domain.list | awk -F , '{if($2!=""){print"server=/"$1"/"$2;}if($3!=""){print"ipset=/."$1"/"$3;}if($4!=""){print"address=/."$1"/"$4;}}' | tee ${FISH_DNSMASQ_CONFIG}
 
 # 生成init脚本
 test -d ${FISH_SCRIPTS_DIR}/firstboot.d || mkdir -p ${FISH_SCRIPTS_DIR}/firstboot.d

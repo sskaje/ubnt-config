@@ -1,4 +1,4 @@
-# port,null,ipset,hijacked-resolution
+#port,null,ipset,hijacked-resolution
 
 80,,WEB_PORT,
 443,,WEB_PORT,
