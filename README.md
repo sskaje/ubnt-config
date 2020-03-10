@@ -1,71 +1,50 @@
-# ubnt-config
+# ubnt自愈能力安装脚本
 
-Config & scripts for UBNT/Unifi Routers.
+## 概述
 
+* ubnt路由器在升级固件后会删除所有配置和数据，除了/config目录,导致每次升级后都需要大量人工操作，执行此脚本后，自动设置好所有配置
+* 此脚本是安装程序，即安装后使ubnt具备自愈能力，故安装此脚本时需ubnt正常运转且已连接互联网。
+* 请在UBNT路由器上切换到root用户执行此脚本。sudo su -
 
+## 说明
 
+install.sh自动创建一下目录
 
-### Usage
+#### UBNT目录
+UBNT目录会被EdgeOS默认自动执行或读取的目录。
 
+packages目录：
+```
+/config/data/firstboot/install-packages 自动安装目录中的*.deb，仅在第一次启动时执行一次。
+```
+
+启动时按顺序自动执行的脚本目录:
+```
+/config/scripts/firstboot.d   升级完固件只执行一次
+/config/scripts/pre-config.d  每次重启后在加载config.boot之前执行
+/config/scripts/post-config.d 每次重启后在加载config.boot之后执行
+```
+
+#### LOCAL目录：
+LOCAL目录存放本地用户数据。
+
+```
+/config/user-data/local 根目录
+/config/user-data/local/etc 存放用户本地配置，install.sh会自动link到/etc下对应目录
+/config/user-data/local/packages 本地包目录
+/config/user-data/local/scripts 本地脚本目录
+/config/user-data/local/data 本地数据目录，执行install.sh之前需要在该目录创建wg_remote_address文件，内容输入dnsmasq使用的dns。
+```
+
+#### Usage
+
+执行安装脚本：
 
 ```
 bash install.sh
 ```
 
-
-Tested on EdgeRouter-4 with firmware 2.0.8.
-
-
-Used and using on ERL, ER-X, ER-4, USG, USG-Pro.
-
-
-
-### Maintenance
-
-##### Domain List (dns-list)
-
+手动更新dnsmasq配置：（需先执行安装脚本）
 ```
-Format: domain,default-resolver,ipset,hijacked-resolution
+bash /config/user-data/local/scripts/update_dnsmasq.sh 
 ```
-
-You can generate dnsmasq config like
-
-```
-server=/domain/default-resolver
-ipset=/.domain/ipset
-address=/.domain/hijacked-resolution
-
-```
-
-Write your own scripts.
-
-
-
-##### Route List (route-list)
-
-IP blocks are imported to an IPSET named DST\_STATIC by default, you can modify it in `scripts/post-config.d/20-import-route`.
-
-
-Configure with your PBR, or you can modify this script for static routing.
-
-
-Here is how you can get ip blocks:  https://sskaje.me/ip-ranges/
-
-This project is useful to generate a merged ip blocks from autonomous system: https://github.com/sskaje/radb
-
-If you want to merge ip blocks, try https://ip.rst.im/merge/
-
-
-
-##### IPSET List (ipset-list)
-
-If you want to add any to ipset by default, add here, format:
-
-```
-FILENAME: IPSET_NAME.list
-CONTENT: set content line by line
-
-```
-
-
-

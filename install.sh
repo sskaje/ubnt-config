@@ -8,18 +8,6 @@
 #   * 此脚本是安装程序，即安装后使ubnt具备自愈能力，故安装此脚本时需ubnt正常运转且已连接互联网。
 #   * 请切换到root用户执行此脚本。sudo su -
 
-
-# 2. 第一次启动执行
-    
-
-# 3. 配置前执行
-
-
-# 4. 配置后执行
-#     更新dnsmasq配置
-
-
-
 PATH=/usr/local/sbin:/usr/sbin:/sbin:/usr/local/bin:/usr/bin:/bin
 export PATH
 
@@ -62,7 +50,7 @@ LOCAL_SCRIPTS_DIR=${LOCAL_DIR}/scripts
 LOCAL_DATA_DIR=${LOCAL_DIR}/data
 
 if [ ! -f ${LOCAL_DATA_DIR}/wg_remote_address ]; then
-    log "dnsmasq server ip is required"
+    log "${LOCAL_DATA_DIR}/wg_remote_address is required"
     exit 1
 fi
 
