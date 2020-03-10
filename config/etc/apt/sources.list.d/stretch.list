@@ -1,5 +1,0 @@
-deb http://mirrors.huaweicloud.com/debian/ stretch main contrib 
-deb http://mirrors.huaweicloud.com/debian/ stretch-updates main contrib 
-deb http://mirrors.huaweicloud.com/debian/ stretch-backports main contrib  
-
-deb http://mirrors.huaweicloud.com/debian-security/ stretch/updates main 

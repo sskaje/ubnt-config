@@ -1,7 +1,0 @@
-#!/bin/bash
-
-
-PACKAGE_DIR=/config/install/packages
-
-
-dpkg -l |grep wireguard >/dev/null || dpkg -i $PACKAGE_DIR/wireguard*.deb
