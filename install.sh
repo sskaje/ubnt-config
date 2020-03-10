@@ -61,6 +61,11 @@ LOCAL_SCRIPTS_DIR=${LOCAL_DIR}/scripts
 # 本地数据目录
 LOCAL_DATA_DIR=${LOCAL_DIR}/data
 
+if [ ! -f ${LOCAL_DATA_DIR}/wg_remote_address ]; then
+    log "dnsmasq server ip is required"
+    exit 1
+fi
+
 # 下载deb
 function add_deb() {
     if [ $# -ne 3 ]; then
@@ -249,7 +254,7 @@ function generate_postconfig_script() {
     cat > $UBNT_POSTCONFIG_DIR/$script_name <<- 'EOF'
 #!/bin/bash
 #
-# 加载配置后脚本
+# 安装软件
 #
 
 PATH=/usr/local/sbin:/usr/sbin:/sbin:/usr/local/bin:/usr/bin:/bin
@@ -271,12 +276,12 @@ log "finish ${0}"
 EOF
     log "finish generate $script_name"
 
-    script_name="00_post_config_install_app.sh"
+    script_name="01_post_config_dnsmasq_conf.sh"
     log "generating $script_name"
     cat > $UBNT_POSTCONFIG_DIR/$script_name <<- 'EOF'
 #!/bin/bash
 #
-# 加载配置后脚本
+# 生成dnsmasq配置
 #
 
 PATH=/usr/local/sbin:/usr/sbin:/sbin:/usr/local/bin:/usr/bin:/bin
@@ -291,28 +296,182 @@ log "Starting $0"
 LOCAL_DIR=/config/user-data/local
 LOCAL_DATA_DIR=${LOCAL_DIR}/data
 
-# 安装软件
-log "updaing apt sources" 
-apt update -y
-
-echo "installing wget zip unzip dnsutils net-tools" 
-apt install -y wget zip unzip dnsutils net-tools
-
 # 生成dnsmasq配置
-wget -O ${LOCAL_DATA_DIR}/domain.list "https://raw.githubusercontent.com/sskaje/ubnt-config/dev/proxy/domain.list"
+if [ $# -eq 1 -a "$1" == "update" ]; then
+    rm -f ${LOCAL_DATA_DIR}/domain.list
+fi
 
-FISH_DNSMASQ_CONFIG=${FISH_ETC_DIR}/dnsmasq.d/domain.conf
-UBNT_DNSMASQ_CONFIG=/etc/dnsmasq.d/domain.conf
+if [ ! -s ${LOCAL_DATA_DIR}/domain.list ]; then
+    log "downloading domain.list"
+    wget -O ${LOCAL_DATA_DIR}/domain.list "https://raw.githubusercontent.com/sskaje/ubnt-config/dev/proxy/domain.list"
+fi
 
-LOCAL_DNS=${$1:-`ip route show table 6 | awk '{print $3}'`}
-sed "/^#/d;/^$/d;s/8.8.8.8/${LOCAL_DNS}/g" ${FISH_DATA_DIR}/domain.list | awk -F , '{if($2!=""){print"server=/"$1"/"$2;}if($3!=""){print"ipset=/."$1"/"$3;}if($4!=""){print"address=/."$1"/"$4;}}' | tee ${FISH_DNSMASQ_CONFIG}
+if [ ! -s ${LOCAL_DATA_DIR}/wg_remote_address ]; then
+    log "dnsmasq server ip is required"
+    exit 1
+fi
 
-echo "$(date +%Y-%m-%d\ %H:%M:%S) - linking $FISH_DNSMASQ_CONFIG to $UBNT_DNSMASQ_CONFIG" 
-ln -sf $FISH_DNSMASQ_CONFIG $UBNT_DNSMASQ_CONFIG
+WG_REMOTE_ADDRESS=`cat ${LOCAL_DATA_DIR}/wg_remote_address`
+
+test -f /etc/dnsmasq.d/domain.conf || touch /etc/dnsmasq.d/domain.conf
+
+sed "/^#/d;/^$/d;s/8.8.8.8/${WG_REMOTE_ADDRESS}/g" ${LOCAL_DATA_DIR}/domain.list | awk -F , '{if($2!=""){print"server=/"$1"/"$2;}if($3!=""){print"ipset=/."$1"/"$3;}if($4!=""){print"address=/."$1"/"$4;}}' | tee /etc/dnsmasq.d/domain.conf
 
 echo "$(date +%Y-%m-%d\ %H:%M:%S) - restart dnsmasq.service" 
-# systemcrl restart dnsmasq.service
-# systemcrl status dnsmasq.service
+systemctl restart dnsmasq.service
+
+log "finish ${0}" 
+EOF
+    log "finish generate $script_name"
+
+    script_name="02_post_config_ipset_net.sh"
+    log "generating $script_name"
+    cat > $UBNT_POSTCONFIG_DIR/$script_name <<- 'EOF'
+#!/bin/bash
+#
+# 配置ipset net类型
+#
+
+PATH=/usr/local/sbin:/usr/sbin:/sbin:/usr/local/bin:/usr/bin:/bin
+export PATH
+
+function log() {
+    echo "$(date +%Y-%m-%d\ %H:%M:%S) - $1..."
+}
+
+log "Starting $0"
+
+LOCAL_DIR=/config/user-data/local
+LOCAL_DATA_DIR=${LOCAL_DIR}/data
+
+if [ $# -eq 1 -a "$1" == "update" ]; then
+    rm -f ${LOCAL_DATA_DIR}/ip.list
+fi
+
+if [ ! -s ${LOCAL_DATA_DIR}/ip.list ]; then
+    log "downloading ip.list"
+    wget -O ${LOCAL_DATA_DIR}/ip.list "https://raw.githubusercontent.com/sskaje/ubnt-config/dev/proxy/ip.list"
+fi
+
+sed '/^#/d;/^$/d' ${LOCAL_DATA_DIR}/ip.list | \
+    while read -r line; do 
+        log $line
+        net_v=$(echo $line | cut -f1 -d,)
+        ipset_v=$(echo $line | cut -f3 -d,)
+
+        if [[ -z $net_v ]]; then
+            log "net is required"
+            exit
+        fi
+
+        ipset -! create $ipset_v hash:net
+        ipset -! add $ipset_v $net_v
+    done
+
+log "finish ${0}" 
+EOF
+    log "finish generate $script_name"
+
+    script_name="03_post_config_ipset_port.sh"
+    log "generating $script_name"
+    cat > $UBNT_POSTCONFIG_DIR/$script_name <<- 'EOF'
+#!/bin/bash
+#
+# 配置ipset port类型
+#
+
+PATH=/usr/local/sbin:/usr/sbin:/sbin:/usr/local/bin:/usr/bin:/bin
+export PATH
+
+function log() {
+    echo "$(date +%Y-%m-%d\ %H:%M:%S) - $1..."
+}
+
+log "Starting $0"
+
+LOCAL_DIR=/config/user-data/local
+LOCAL_DATA_DIR=${LOCAL_DIR}/data
+
+if [ $# -eq 1 -a "$1" == "update" ]; then
+    rm -f ${LOCAL_DATA_DIR}/port.list
+fi
+
+if [ ! -s ${LOCAL_DATA_DIR}/port.list ]; then
+    log "downloading port.list"
+    wget -O ${LOCAL_DATA_DIR}/port.list "https://raw.githubusercontent.com/sskaje/ubnt-config/dev/proxy/port.list"
+fi
+
+sed '/^#/d;/^$/d' ${LOCAL_DATA_DIR}/port.list | \
+    while read -r line; do 
+        log $line
+        port_v=$(echo $line | cut -f1 -d,)
+        ipset_v=$(echo $line | cut -f3 -d,)
+
+        if [[ -z $port_v ]]; then
+            log "port is required"
+            exit
+        fi
+
+        ipset -! create $ipset_v hash:net,port
+        ipset -! add $ipset_v 192.168.0.0/16,${port_v}
+    done
+
+log "finish ${0}" 
+EOF
+    log "finish generate $script_name"
+
+    script_name="04_post_config_firewall.sh"
+    log "generating $script_name"
+    cat > $UBNT_POSTCONFIG_DIR/$script_name <<- 'EOF'
+#!/bin/bash
+#
+# 配置防火墙
+#
+
+PATH=/usr/local/sbin:/usr/sbin:/sbin:/usr/local/bin:/usr/bin:/bin
+export PATH
+
+function log() {
+    echo "$(date +%Y-%m-%d\ %H:%M:%S) - $1..."
+}
+
+log "Starting $0"
+
+log "l2tp启用翻墙"
+test -z "$(iptables -t mangle -L VYATTA_FW_IN_HOOK -v | grep 'l2tp+')" && iptables -t mangle -A VYATTA_FW_IN_HOOK -i l2tp+ -j AUTO_VPN
+
+log "pptp启用翻墙"
+test -z "$(iptables -t mangle -L VYATTA_FW_IN_HOOK -v | grep 'pptp+')" && iptables -t mangle -A VYATTA_FW_IN_HOOK -i pptp+ -j AUTO_VPN
+
+log "finish ${0}" 
+EOF
+    log "finish generate $script_name"
+}
+
+# 生成手动更新dnsmasq脚本
+function generate_update_dnsmasq_script() {
+    script_name="update_dnsmasq.sh"
+    log "generating $script_name"
+    cat > $LOCAL_SCRIPTS_DIR/$script_name <<- 'EOF'
+#!/bin/bash
+#
+# 手动更新dnsmasq脚本
+#
+
+PATH=/usr/local/sbin:/usr/sbin:/sbin:/usr/local/bin:/usr/bin:/bin
+export PATH
+
+function log() {
+    echo "$(date +%Y-%m-%d\ %H:%M:%S) - $1..."
+}
+
+log "Starting $0" 
+
+UBNT_POSTCONFIG_DIR=/config/scripts/post-config.d
+
+bash $UBNT_POSTCONFIG_DIR/01_post_config_dnsmasq_conf.sh update
+bash $UBNT_POSTCONFIG_DIR/02_post_config_ipset_net.sh update
+bash $UBNT_POSTCONFIG_DIR/03_post_config_ipset_port.sh update
 
 log "finish ${0}" 
 EOF
@@ -325,6 +484,7 @@ function install() {
     generate_firstboot_script
     generate_preconfig_script
     generate_postconfig_script
+    generate_update_dnsmasq_script
 }
 
 install
