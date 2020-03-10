@@ -48,7 +48,6 @@ LOCAL目录存放本地用户数据。
 执行安装脚本：
 ```
 bash install.sh
-
 ```
 
 手动更新dnsmasq配置：（需先执行安装脚本）
