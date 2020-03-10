@@ -8,7 +8,7 @@
 
 ## 说明
 
-install.sh自动创建一下目录
+install.sh自动创建以下目录
 
 #### UBNT目录
 UBNT目录会被EdgeOS默认自动执行或读取的目录。
