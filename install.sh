@@ -12,7 +12,7 @@ PATH=/usr/local/sbin:/usr/sbin:/sbin:/usr/local/bin:/usr/bin:/bin
 export PATH
 
 function log() {
-    echo "$(date +%Y-%m-%d\ %H:%M:%S) - $1..."
+    echo "$(date +%Y-%m-%d\ %H:%M:%S) - $1..." | tee -a /tmp/install.log
 }
 
 log "starting install.sh"
@@ -100,7 +100,7 @@ PATH=/usr/local/sbin:/usr/sbin:/sbin:/usr/local/bin:/usr/bin:/bin
 export PATH
 
 function log() {
-    echo "$(date +%Y-%m-%d\ %H:%M:%S) - $1..."
+    echo "$(date +%Y-%m-%d\ %H:%M:%S) - $1..." | tee -a /tmp/install.log
 }
 
 log "Starting $0" 
@@ -126,7 +126,7 @@ PATH=/usr/local/sbin:/usr/sbin:/sbin:/usr/local/bin:/usr/bin:/bin
 export PATH
 
 function log() {
-    echo "$(date +%Y-%m-%d\ %H:%M:%S) - $1..."
+    echo "$(date +%Y-%m-%d\ %H:%M:%S) - $1..." | tee -a /tmp/install.log
 }
 
 log "Starting $0" 
@@ -152,7 +152,7 @@ PATH=/usr/local/sbin:/usr/sbin:/sbin:/usr/local/bin:/usr/bin:/bin
 export PATH
 
 function log() {
-    echo "$(date +%Y-%m-%d\ %H:%M:%S) - $1..."
+    echo "$(date +%Y-%m-%d\ %H:%M:%S) - $1..." | tee -a /tmp/install.log
 }
 
 log "Starting $0"
@@ -186,7 +186,7 @@ PATH=/usr/local/sbin:/usr/sbin:/sbin:/usr/local/bin:/usr/bin:/bin
 export PATH
 
 function log() {
-    echo "$(date +%Y-%m-%d\ %H:%M:%S) - $1..."
+    echo "$(date +%Y-%m-%d\ %H:%M:%S) - $1..." | tee -a /tmp/install.log
 }
 
 log "Starting $0" 
@@ -211,7 +211,7 @@ PATH=/usr/local/sbin:/usr/sbin:/sbin:/usr/local/bin:/usr/bin:/bin
 export PATH
 
 function log() {
-    echo "$(date +%Y-%m-%d\ %H:%M:%S) - $1..."
+    echo "$(date +%Y-%m-%d\ %H:%M:%S) - $1..." | tee -a /tmp/install.log
 }
 
 log "Starting $0"
@@ -249,7 +249,7 @@ PATH=/usr/local/sbin:/usr/sbin:/sbin:/usr/local/bin:/usr/bin:/bin
 export PATH
 
 function log() {
-    echo "$(date +%Y-%m-%d\ %H:%M:%S) - $1..."
+    echo "$(date +%Y-%m-%d\ %H:%M:%S) - $1..." | tee -a /tmp/install.log
 }
 
 log "Starting $0"
@@ -276,7 +276,7 @@ PATH=/usr/local/sbin:/usr/sbin:/sbin:/usr/local/bin:/usr/bin:/bin
 export PATH
 
 function log() {
-    echo "$(date +%Y-%m-%d\ %H:%M:%S) - $1..."
+    echo "$(date +%Y-%m-%d\ %H:%M:%S) - $1..." | tee -a /tmp/install.log
 }
 
 log "Starting $0"
@@ -324,7 +324,7 @@ PATH=/usr/local/sbin:/usr/sbin:/sbin:/usr/local/bin:/usr/bin:/bin
 export PATH
 
 function log() {
-    echo "$(date +%Y-%m-%d\ %H:%M:%S) - $1..."
+    echo "$(date +%Y-%m-%d\ %H:%M:%S) - $1..." | tee -a /tmp/install.log
 }
 
 log "Starting $0"
@@ -371,7 +371,7 @@ PATH=/usr/local/sbin:/usr/sbin:/sbin:/usr/local/bin:/usr/bin:/bin
 export PATH
 
 function log() {
-    echo "$(date +%Y-%m-%d\ %H:%M:%S) - $1..."
+    echo "$(date +%Y-%m-%d\ %H:%M:%S) - $1..." | tee -a /tmp/install.log
 }
 
 log "Starting $0"
@@ -418,7 +418,7 @@ PATH=/usr/local/sbin:/usr/sbin:/sbin:/usr/local/bin:/usr/bin:/bin
 export PATH
 
 function log() {
-    echo "$(date +%Y-%m-%d\ %H:%M:%S) - $1..."
+    echo "$(date +%Y-%m-%d\ %H:%M:%S) - $1..." | tee -a /tmp/install.log
 }
 
 log "Starting $0"
@@ -448,7 +448,7 @@ PATH=/usr/local/sbin:/usr/sbin:/sbin:/usr/local/bin:/usr/bin:/bin
 export PATH
 
 function log() {
-    echo "$(date +%Y-%m-%d\ %H:%M:%S) - $1..."
+    echo "$(date +%Y-%m-%d\ %H:%M:%S) - $1..." | tee -a /tmp/install.log
 }
 
 log "Starting $0" 
