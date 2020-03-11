@@ -352,7 +352,6 @@ sed '/^#/d;/^$/d' ${LOCAL_DATA_DIR}/ip.list | \
             exit
         fi
 
-        ipset -! create $ipset_v hash:net
         ipset -! add $ipset_v $net_v
     done
 
@@ -400,8 +399,7 @@ sed '/^#/d;/^$/d' ${LOCAL_DATA_DIR}/port.list | \
             exit
         fi
 
-        ipset -! create $ipset_v hash:net,port
-        ipset -! add $ipset_v 192.168.0.0/16,${port_v}
+        ipset -! add $ipset_v ${port_v}
     done
 
 log "finish ${0}" 
