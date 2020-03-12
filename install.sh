@@ -111,6 +111,7 @@ timedatectl set-timezone Asia/Shanghai
 
 log "finish ${0}" 
 EOF
+    chmod +x $UBNT_FIRSTBOOT_DIR/$script_name
     log "finish generate $script_name"
 
     # 设置语言
@@ -137,7 +138,9 @@ locale -a | grep "C\.UTF\-8" > /dev/null && sed -i "/^export LC_ALL=C$/s/LC_ALL=
 
 log "finish ${0}" 
 EOF
+    chmod +x $UBNT_FIRSTBOOT_DIR/$script_name
     log "finish generate $script_name"
+
 
     # 设置apt源
     script_name="02_first_boot_set_sources.sh"
@@ -168,6 +171,7 @@ SUBEOF
 
 log "finish ${0}" 
 EOF
+    chmod +x $UBNT_FIRSTBOOT_DIR/$script_name
     log "finish generate $script_name"
 }
 
@@ -197,6 +201,7 @@ grep "alias ll=\"ls -alh\"" /etc/default/vyatta-local-env > /dev/null || sed -i 
 
 log "finish ${0}" 
 EOF
+    chmod +x $UBNT_PRECONFIG_DIR/$script_name
     log "finish generate $script_name"
 
     script_name="01_pre_config_link_etc.sh"
@@ -231,6 +236,7 @@ link_etc
 
 log "finish ${0}" 
 EOF
+    chmod +x $UBNT_PRECONFIG_DIR/$script_name
     log "finish generate $script_name"
 }
 
@@ -262,6 +268,7 @@ apt install -y wget zip unzip dnsutils net-tools
 
 log "finish ${0}" 
 EOF
+    chmod +x $UBNT_POSTCONFIG_DIR/$script_name
     log "finish generate $script_name"
 
     script_name="01_post_config_dnsmasq_conf.sh"
@@ -310,6 +317,7 @@ systemctl restart dnsmasq.service
 
 log "finish ${0}" 
 EOF
+    chmod +x $UBNT_POSTCONFIG_DIR/$script_name
     log "finish generate $script_name"
 
     script_name="02_post_config_ipset_net.sh"
@@ -357,6 +365,7 @@ sed '/^#/d;/^$/d' ${LOCAL_DATA_DIR}/ip.list | \
 
 log "finish ${0}" 
 EOF
+    chmod +x $UBNT_POSTCONFIG_DIR/$script_name
     log "finish generate $script_name"
 
     script_name="03_post_config_ipset_port.sh"
@@ -404,6 +413,7 @@ sed '/^#/d;/^$/d' ${LOCAL_DATA_DIR}/port.list | \
 
 log "finish ${0}" 
 EOF
+    chmod +x $UBNT_POSTCONFIG_DIR/$script_name
     log "finish generate $script_name"
 
     script_name="04_post_config_firewall.sh"
@@ -429,8 +439,15 @@ test -z "$(iptables -t mangle -L VYATTA_FW_IN_HOOK -v | grep 'l2tp+')" && iptabl
 log "pptp启用翻墙"
 test -z "$(iptables -t mangle -L VYATTA_FW_IN_HOOK -v | grep 'pptp+')" && iptables -t mangle -A VYATTA_FW_IN_HOOK -i pptp+ -j AUTO_VPN
 
+log "l2tp to router"
+test -z "$(iptables -L VYATTA_FW_LOCAL_HOOK -v | grep 'l2tp+')" && iptables -t filter -A VYATTA_FW_LOCAL_HOOK -i l2tp+ -j L2TP_LOCAL
+
+log "l2tp to internal"
+test -z "$(iptables -L VYATTA_FW_IN_HOOK -v | grep 'pptp+')" && iptables -t filter -A VYATTA_FW_IN_HOOK -i l2tp+ -j L2TP_IN
+
 log "finish ${0}" 
 EOF
+    chmod +x $UBNT_POSTCONFIG_DIR/$script_name
     log "finish generate $script_name"
 }
 
@@ -461,6 +478,7 @@ bash $UBNT_POSTCONFIG_DIR/03_post_config_ipset_port.sh update
 
 log "finish ${0}" 
 EOF
+    chmod +x $UBNT_POSTCONFIG_DIR/$script_name
     log "finish generate $script_name"
 }
 
